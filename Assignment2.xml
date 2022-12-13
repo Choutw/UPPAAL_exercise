@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.1//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_2.dtd'>
+<nta>
+	<declaration>// Place global declarations here.
+
+int CPU1_C;
+chan CPU1_use, CPU1_done;
+int CPU2_C;
+chan CPU2_use, CPU2_done;
+
+clock y;
+int done_counter;</declaration>
+	<template>
+		<name x="5" y="5">CPU</name>
+		<parameter>chan &amp;use, chan &amp;done, int &amp;C</parameter>
+		<declaration>// Place local declarations here.
+
+clock x;</declaration>
+		<location id="id0" x="-425" y="-246">
+			<name x="-435" y="-280">Idle</name>
+		</location>
+		<location id="id1" x="-433" y="-85">
+			<name x="-450" y="-119">InUse</name>
+			<label kind="invariant" x="-458" y="-68">x &lt;= C</label>
+		</location>
+		<init ref="id0"/>
+		<transition>
+			<source ref="id1"/>
+			<target ref="id0"/>
+			<label kind="guard" x="-595" y="-187">x==C</label>
+			<label kind="synchronisation" x="-595" y="-170">done!</label>
+			<nail x="-535" y="-85"/>
+			<nail x="-535" y="-212"/>
+		</transition>
+		<transition>
+			<source ref="id0"/>
+			<target ref="id1"/>
+			<label kind="synchronisation" x="-280" y="-170">use?</label>
+			<label kind="assignment" x="-280" y="-144">x := 0</label>
+			<nail x="-297" y="-212"/>
+			<nail x="-297" y="-85"/>
+		</transition>
+	</template>
+	<template>
+		<name>Job</name>
+		<parameter>const int C1, const int C2</parameter>
+		<location id="id2" x="-365" y="-314">
+			<name x="-375" y="-348">start</name>
+		</location>
+		<location id="id3" x="-382" y="-102">
+		</location>
+		<location id="id4" x="-408" y="8">
+		</location>
+		<location id="id5" x="-799" y="-204">
+			<name x="-809" y="-238">finish</name>
+		</location>
+		<init ref="id2"/>
+		<transition>
+			<source ref="id3"/>
+			<target ref="id5"/>
+			<label kind="synchronisation" x="-561" y="-170">CPU1_done?</label>
+			<label kind="assignment" x="-595" y="-187">done_counter++</label>
+		</transition>
+		<transition>
+			<source ref="id4"/>
+			<target ref="id5"/>
+			<label kind="synchronisation" x="-671" y="-76">CPU2_done?</label>
+			<label kind="assignment" x="-680" y="-59">done_counter++</label>
+		</transition>
+		<transition>
+			<source ref="id2"/>
+			<target ref="id4"/>
+			<label kind="synchronisation" x="-110" y="-34">CPU2_use!</label>
+			<label kind="assignment" x="-119" y="-8">CPU2_C := C2</label>
+			<nail x="8" y="-246"/>
+			<nail x="-8" y="-59"/>
+		</transition>
+		<transition>
+			<source ref="id2"/>
+			<target ref="id3"/>
+			<label kind="synchronisation" x="-212" y="-170">CPU1_use!</label>
+			<label kind="assignment" x="-221" y="-144">CPU1_C := C1</label>
+			<nail x="-229" y="-229"/>
+			<nail x="-229" y="-85"/>
+		</transition>
+	</template>
+	<system>// Place template instantiations here.
+
+
+// Job declaration
+JobA=Job(3,6);
+JobB=Job(3,5);
+JobC=Job(6,2);
+JobD=Job(3,6);
+JobE=Job(2,2);
+
+CPU1=CPU(CPU1_use,CPU1_done,CPU1_C);
+CPU2=CPU(CPU2_use,CPU2_done,CPU2_C);
+
+// List one or more processes to be composed into a system.
+system JobA, JobB, JobC, JobD, JobE, CPU1, CPU2;</system>
+	<queries>
+		<query>
+			<formula>E&lt;&gt; done_counter == 5</formula>
+			<comment></comment>
+		</query>
+	</queries>
+</nta>
